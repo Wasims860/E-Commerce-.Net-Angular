@@ -1,14 +1,5 @@
-
-using API.Dtos;
-using AutoMapper;
-using Core.Interfaces;
-using Core.Specifications;
-
 namespace API.Controllers;
-
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController : ControllerBase
+public class ProductsController : BaseApiController
 {
     private readonly IGeniricRepository<Product> _productRepo;
     private readonly IGeniricRepository<ProductType> _productTypeRepo;
@@ -34,10 +25,13 @@ public class ProductsController : ControllerBase
         return Ok(_mappr.Map<IReadOnlyList<ProductToReturnDto>>(products));
     }
     [HttpGet("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<ProductToReturnDto>> GetProduct(int id)
     {
         var spec = new ProductsWithTypesAndBrandSpecification(id);
         var product = await _productRepo.GetEntityWithSpec(spec);
+        if (product == null) return NotFound(new ApiResponse(404));
         return _mappr.Map<ProductToReturnDto>(product);
     }
     [HttpGet("Brands")]
